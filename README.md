@@ -44,6 +44,10 @@ The `-e` flag installs in "editable" mode, so changes to ParseImageNet are immed
 
 ## Usage
 
+> [!NOTE]
+> 
+> [Example Notebook](/DOCS/ExampleNotebook.ipynb)
+
 ### In Jupyter Lab / Jupyter Notebook
 
 ```python
