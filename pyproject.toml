@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "parseimagenet"
+version = "0.1.0"
+description = "Extract ImageNet image paths by category keywords"
+requires-python = ">=3.8"
+dependencies = []
+
+[project.optional-dependencies]
+dev = ["jupyter", "ipykernel"]
+
+# Package discovery configuration
+# The package lives in the "parseimagenet/" subdirectory, following standard Python packaging conventions.
+# This allows `pip install -e .` to work correctly, making `from parseimagenet import ...` available.
+# Structure:
+#   ParseImageNet/           <- project root (where pyproject.toml lives)
+#   └── parseimagenet/       <- actual Python package (has __init__.py)
+#       ├── __init__.py
+#       ├── ParseImageNetSubset.py
+#       └── keywords/
+[tool.setuptools.packages.find]
+where = ["."]

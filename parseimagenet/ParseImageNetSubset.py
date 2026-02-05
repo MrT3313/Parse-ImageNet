@@ -4,20 +4,49 @@ import random
 import argparse
 
 # keywords
-from keywords.birds import bird_keywords
+try:
+    from .keywords.birds import bird_keywords
+except ImportError:
+    from keywords.birds import bird_keywords
 
-def get_image_paths_by_keywords(base_path, keywords, num_images=200):
+# Registry of predefined keyword presets
+KEYWORD_PRESETS = {
+    "birds": bird_keywords,
+}
+
+def get_available_presets():
+    """Return list of available preset names."""
+    return list(KEYWORD_PRESETS.keys())
+
+def get_image_paths_by_keywords(base_path, preset="birds", keywords=None, num_images=200):
     """
     Extract file paths for images matching specified keywords.
-    
+
     Args:
         base_path: Path to ImageNet-Subset directory
-        keywords: List of keywords to match in category names
+        preset: Name of predefined keyword list (default: "birds").
+                Available presets: "birds". Use get_available_presets() to see all.
+        keywords: Custom list of keywords. If provided, overrides preset.
         num_images: Number of random images to extract (default: 200)
-    
+
     Returns:
         List of Path objects to the selected images
     """
+    # Determine which keywords to use
+    if keywords is not None:
+        # Custom keywords provided - validate it's a list
+        if isinstance(keywords, str):
+            raise TypeError("keywords must be a list of strings, not a single string. Use keywords=['your_keyword'] instead.")
+        if not isinstance(keywords, list):
+            raise TypeError("keywords must be a list of strings.")
+        search_keywords = keywords
+    else:
+        # Use preset
+        if preset not in KEYWORD_PRESETS:
+            available = get_available_presets()
+            raise ValueError(f"Unknown preset '{preset}'. Available presets: {available}")
+        search_keywords = KEYWORD_PRESETS[preset]
+
     train_annotations = base_path / "ILSVRC" / "ImageSets" / "CLS-LOC" / "train_cls.txt"
     synset_mapping_file = base_path / "LOC_synset_mapping.txt"
     data_path = base_path / "ILSVRC" / "Data" / "CLS-LOC" / "train"
@@ -52,12 +81,12 @@ def get_image_paths_by_keywords(base_path, keywords, num_images=200):
     
     # Find matching categories
     print("=" * 80)
-    print(f"SEARCHING WITH KEYWORDS: {keywords}")
+    print(f"SEARCHING WITH KEYWORDS: {search_keywords}")
     print("=" * 80)
-    
+
     matching_wnids = []
     for wnid, category_name in synset_mapping.items():
-        if any(keyword.lower() in category_name.lower() for keyword in keywords):
+        if any(keyword.lower() in category_name.lower() for keyword in search_keywords):
             if wnid in category_images:
                 matching_wnids.append(wnid)
                 count = len(category_images[wnid])
@@ -100,20 +129,27 @@ def get_image_paths_by_keywords(base_path, keywords, num_images=200):
 def main():
     # Set up argument parser
     parser = argparse.ArgumentParser(description='Extract ImageNet image paths by category keywords')
-    parser.add_argument('--num_images', type=int, default=200, 
+    parser.add_argument('--num_images', type=int, default=200,
                         help='Number of random images to extract (default: 200)')
-    parser.add_argument('--keywords', nargs='+', default=bird_keywords, 
-                        help='Keywords to match in category names (default: bird)')
-    parser.add_argument('--base_path', type=str, 
+    parser.add_argument('--preset', type=str, default='birds',
+                        help=f'Predefined keyword preset (default: birds). Available: {get_available_presets()}')
+    parser.add_argument('--keywords', nargs='+', default=None,
+                        help='Custom keywords to match in category names (overrides --preset)')
+    parser.add_argument('--base_path', type=str,
                         default='/Users/mrt/Documents/MrT/code/computer-vision/image-bank/ImageNet-Subset',
                         help='Path to ImageNet-Subset directory')
-    
+
     args = parser.parse_args()
-    
+
     base_path = Path(args.base_path)
-    
+
     # Extract image paths
-    image_paths = get_image_paths_by_keywords(base_path, args.keywords, num_images=args.num_images)
+    image_paths = get_image_paths_by_keywords(
+        base_path,
+        preset=args.preset,
+        keywords=args.keywords,
+        num_images=args.num_images
+    )
     
     # Print first 10 paths as example
     if image_paths:
