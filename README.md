@@ -40,7 +40,7 @@ pip install -e /path/to/ParseImageNet
 # ex: pip install -e /Users/mrt/Documents/MrT/code/computer-vision/ParseImageNet
 ```
 
-The `-e` flag installs in "editable" mode, so changes to ParseImageNet are immediately available without reinstalling.
+The `-e` flag installs in "editable" mode, so code changes are immediately available without reinstalling. However, changes to package metadata (version, dependencies) in `pyproject.toml` still require running `pip install -e .` again.
 
 ## Usage
 
