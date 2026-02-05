@@ -1,8 +1,12 @@
 from pathlib import Path
 from collections import defaultdict
 import random
+import argparse
 
-def extract_category_paths(base_path, keywords, num_images=200):
+# keywords
+from keywords.birds import bird_keywords
+
+def get_image_paths_by_keywords(base_path, keywords, num_images=200):
     """
     Extract file paths for images matching specified keywords.
     
@@ -19,6 +23,7 @@ def extract_category_paths(base_path, keywords, num_images=200):
     data_path = base_path / "ILSVRC" / "Data" / "CLS-LOC" / "train"
     
     # Load synset mapping (wnid -> category names)
+    print("")
     print("Loading category names...")
     synset_mapping = {}
     with open(synset_mapping_file, 'r') as f:
@@ -47,7 +52,7 @@ def extract_category_paths(base_path, keywords, num_images=200):
     
     # Find matching categories
     print("=" * 80)
-    print(f"CATEGORIES MATCHING KEYWORDS: {keywords}")
+    print(f"SEARCHING WITH KEYWORDS: {keywords}")
     print("=" * 80)
     
     matching_wnids = []
@@ -92,176 +97,29 @@ def extract_category_paths(base_path, keywords, num_images=200):
         return []
 
 
-# Example usage
-if __name__ == "__main__":
-    base_path = Path("/Users/mrt/Documents/MrT/code/computer-vision/image-bank/ImageNet-Subset")
+def main():
+    # Set up argument parser
+    parser = argparse.ArgumentParser(description='Extract ImageNet image paths by category keywords')
+    parser.add_argument('--num_images', type=int, default=200, 
+                        help='Number of random images to extract (default: 200)')
+    parser.add_argument('--keywords', nargs='+', default=bird_keywords, 
+                        help='Keywords to match in category names (default: bird)')
+    parser.add_argument('--base_path', type=str, 
+                        default='/Users/mrt/Documents/MrT/code/computer-vision/image-bank/ImageNet-Subset',
+                        help='Path to ImageNet-Subset directory')
     
-    # Define your keywords
-    bird_keywords = [
-        'bird', 'finch', 'robin', 'eagle', 'hawk', 'owl', 'sparrow', 
-        'warbler', 'hummingbird', 'jay', 'cardinal', 'chickadee',
-        'duck', 'goose', 'swan', 'crane', 'heron', 'pelican',
-        'parrot', 'cockatoo', 'macaw', 'penguin', 'ostrich',
-        'brambling', 'bunting', 'junco', 'oriole', 'magpie',
-        'cock', 'hen', 'rooster', 'chicken', 'grouse', 'partridge',
-        'quail', 'pheasant', 'peacock', 'flamingo', 'stork',
-        'albatross', 'cormorant', 'kingfisher', 'hornbill',
-        'toucan', 'woodpecker', 'flycatcher', 'shrike', 'vireo',
-        'wren', 'thrush', 'mockingbird', 'starling', 'pipit'
-    ]
+    args = parser.parse_args()
     
-    # Extract 200 bird image paths
-    image_paths = extract_category_paths(base_path, bird_keywords, num_images=200)
+    base_path = Path(args.base_path)
+    
+    # Extract image paths
+    image_paths = get_image_paths_by_keywords(base_path, args.keywords, num_images=args.num_images)
     
     # Print first 10 paths as example
-    print("First 10 image paths:")
-    for i, path in enumerate(image_paths[:10], 1):
-        print(f"{i}. {path}")
-    
-    # Save paths to a text file
-    output_file = base_path / "bird_image_paths.txt"
-    with open(output_file, 'w') as f:
-        for path in image_paths:
-            f.write(f"{path}\n")
-    
-    print(f"\nAll paths saved to: {output_file}")
+    if image_paths:
+        print("\nFirst 10 image paths:")
+        for i, path in enumerate(image_paths[:10], 1):
+            print(f"{i}. {path}")
 
-# from pathlib import Path
-# from collections import defaultdict
-# import random
-# import shutil
-
-# # Define paths
-# base_path = Path("/Users/mrt/Documents/MrT/code/computer-vision/image-bank/ImageNet-Subset")
-# train_annotations = base_path / "ILSVRC" / "ImageSets" / "CLS-LOC" / "train_cls.txt"
-# synset_mapping_file = base_path / "LOC_synset_mapping.txt"
-# data_path = base_path / "ILSVRC" / "Data" / "CLS-LOC" / "train"
-
-# # Load synset mapping (wnid -> category names)
-# print("Loading category names...")
-# synset_mapping = {}
-# with open(synset_mapping_file, 'r') as f:
-#     for line in f:
-#         parts = line.strip().split(maxsplit=1)
-#         if len(parts) == 2:
-#             wnid = parts[0]
-#             category_name = parts[1]
-#             synset_mapping[wnid] = category_name
-
-# print(f"Loaded {len(synset_mapping)} categories\n")
-
-# # Parse training annotations
-# print("Parsing training annotations...")
-# category_images = defaultdict(list)
-
-# with open(train_annotations, 'r') as f:
-#     for line in f:
-#         parts = line.strip().split()
-#         if len(parts) >= 1:
-#             image_path = parts[0]  # e.g., "n01440764/n01440764_10026"
-#             wnid = image_path.split('/')[0]  # Extract the wnid
-#             category_images[wnid].append(image_path)
-
-# print(f"Found {len(category_images)} unique categories\n")
-
-# # Display categories with names
-# print("=" * 80)
-# print("ALL CATEGORIES:")
-# print("=" * 80)
-# for wnid in sorted(category_images.keys()):
-#     category_name = synset_mapping.get(wnid, "Unknown")
-#     count = len(category_images[wnid])
-#     print(f"{wnid}: {category_name} ({count} images)")
-
-# # Find bird categories
-# print("\n" + "=" * 80)
-# print("BIRD CATEGORIES:")
-# print("=" * 80)
-# bird_keywords = ['bird', 'finch', 'robin', 'eagle', 'hawk', 'owl', 'sparrow', 
-#                  'warbler', 'hummingbird', 'jay', 'cardinal', 'chickadee',
-#                  'duck', 'goose', 'swan', 'crane', 'heron', 'pelican',
-#                  'parrot', 'cockatoo', 'macaw', 'penguin', 'ostrich',
-#                  'brambling', 'bunting', 'junco', 'oriole', 'magpie']
-
-# bird_wnids = []
-# for wnid, category_name in synset_mapping.items():
-#     if any(keyword in category_name.lower() for keyword in bird_keywords):
-#         if wnid in category_images:
-#             bird_wnids.append(wnid)
-#             count = len(category_images[wnid])
-#             print(f"{wnid}: {category_name} ({count} images)")
-
-# print(f"\nTotal bird categories found: {len(bird_wnids)}")
-
-# # Collect all bird images
-# all_bird_images = []
-# for wnid in bird_wnids:
-#     all_bird_images.extend(category_images[wnid])
-
-# print(f"Total bird images available: {len(all_bird_images)}")
-
-# # Extract 200 random bird images
-# if len(all_bird_images) > 0:
-#     num_to_extract = min(200, len(all_bird_images))
-#     selected_images = random.sample(all_bird_images, num_to_extract)
-    
-#     output_dir = base_path / "bird_subset"
-#     output_dir.mkdir(exist_ok=True)
-    
-#     print(f"\nExtracting {num_to_extract} bird images to {output_dir}...")
-    
-#     copied = 0
-#     for img_path in selected_images:
-#         # img_path is like "n01440764/n01440764_10026"
-#         src = data_path / f"{img_path}.JPEG"
-        
-#         if src.exists():
-#             dst = output_dir / f"{img_path.replace('/', '_')}.JPEG"
-#             shutil.copy(src, dst)
-#             copied += 1
-#             if copied % 50 == 0:
-#                 print(f"Copied {copied} images...")
-    
-#     print(f"\nDone! Copied {copied} bird images to {output_dir}")
-# else:
-#     print("\nNo bird images found!")
-
-# # from pathlib import Path
-# # from collections import defaultdict
-
-# # from pathlib import Path
-# # from collections import defaultdict
-
-# # # Define paths
-# # base_path = Path("/Users/mrt/Documents/MrT/code/computer-vision/image-bank/ImageNet-Subset")
-# # annotations_path = base_path / "ILSVRC" / "Annotations" / "CLS-LOC"
-# # data_path = base_path / "ILSVRC" / "Data" / "CLS-LOC"
-
-# # # Read the training annotations
-# # train_annotations = base_path / "ILSVRC" / "ImageSets" / "CLS-LOC" / "train_cls.txt"
-
-# # print(f"Reading annotations from: {train_annotations}")
-# # print("Parsing file (this may take a moment for large files)...")
-
-# # # Dictionary to store image paths by category
-# # category_images = defaultdict(list)
-
-# # # Parse annotations
-# # line_count = 0
-# # with open(train_annotations, 'r') as f:
-# #     for line in f:
-# #         parts = line.strip().split()
-# #         if len(parts) >= 2:
-# #             image_name = parts[0]
-# #             wnid = parts[1]
-# #             category_images[wnid].append(image_name)
-# #             line_count += 1
-            
-# #             if line_count % 10000 == 0:
-# #                 print(f"Processed {line_count} images...")
-
-# # print(f"\nDone! Processed {line_count} total images")
-# # print(f"Total categories: {len(category_images)}")
-# # print("\nFirst 10 categories:")
-# # for wnid in sorted(category_images.keys())[:10]:
-# #     print(f"{wnid}: {len(category_images[wnid])} images")
+if __name__ == "__main__":
+    main()
