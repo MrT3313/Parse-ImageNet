@@ -2,6 +2,11 @@
 
 Extract image file paths from ImageNet by matching category keywords. Useful for creating custom subsets of ImageNet for training or evaluation.
 
+[![PyPI Version](https://img.shields.io/pypi/v/parseimagenet)](https://pypi.org/project/parseimagenet/)
+[![Python Version](https://img.shields.io/pypi/pyversions/parseimagenet)](https://pypi.org/project/parseimagenet/)
+[![License](https://img.shields.io/github/license/MrT3313/Parse-ImageNet)](https://github.com/MrT3313/Parse-ImageNet/blob/main/LICENSE)
+[![Downloads](https://img.shields.io/pypi/dm/parseimagenet)](https://pypi.org/project/parseimagenet/)
+
 ## [Kaggle Dataset](https://www.kaggle.com/competitions/imagenet-object-localization-challenge/data)
 
 ## Prerequisites
@@ -26,21 +31,16 @@ Extract image file paths from ImageNet by matching category keywords. Useful for
 
 ## Installation
 
-Clone the repository:
+```bash
+pip install parseimagenet
+```
+
+For local development:
 
 ```bash
 git clone https://github.com/MrT3313/Parse-ImageNet.git
+pip install -e ./Parse-ImageNet
 ```
-
-Then install the package into the environment where you run Jupyter:
-
-```bash
-# Using pip
-pip install -e /path/to/ParseImageNet
-# ex: pip install -e /Users/mrt/Documents/MrT/code/computer-vision/ParseImageNet
-```
-
-The `-e` flag installs in "editable" mode, so code changes are immediately available without reinstalling. However, changes to package metadata (version, dependencies) in `pyproject.toml` still require running `pip install -e .` again.
 
 ## Usage
 
