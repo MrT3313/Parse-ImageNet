@@ -5,9 +5,23 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "parseimagenet"
 version = "1.0.1"
+license = { text = "MIT" }
 description = "Extract ImageNet image paths by category keywords"
+readme = "README.md"
+authors = [
+  { name="Reed Turgeon", email="turgeon.dev@gmail.com" },
+]
 requires-python = ">=3.8"
 dependencies = []
+
+# Classifiers help users find your project on PyPI
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/MrT3313/Parse-ImageNet"
 
 [project.optional-dependencies]
 dev = ["jupyter", "ipykernel"]
