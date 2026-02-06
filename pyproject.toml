@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "parseimagenet"
-version = "1.0.2"
+version = "1.0.3"
 license = { text = "MIT" }
 description = "Extract ImageNet image paths by category keywords"
 readme = "README.md"
