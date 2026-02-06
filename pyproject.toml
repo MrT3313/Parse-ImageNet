@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "parseimagenet"
-version = "1.0.0"
+version = "1.0.1"
 description = "Extract ImageNet image paths by category keywords"
 requires-python = ">=3.8"
 dependencies = []

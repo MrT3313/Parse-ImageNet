@@ -2,6 +2,7 @@ from pathlib import Path
 from collections import defaultdict
 import random
 import argparse
+import re
 
 # keywords
 try:
@@ -86,7 +87,7 @@ def get_image_paths_by_keywords(base_path, preset="birds", keywords=None, num_im
 
     matching_wnids = []
     for wnid, category_name in synset_mapping.items():
-        if any(keyword.lower() in category_name.lower() for keyword in search_keywords):
+        if any(re.search(rf'\b{re.escape(keyword)}\b', category_name, re.IGNORECASE) for keyword in search_keywords):
             if wnid in category_images:
                 matching_wnids.append(wnid)
                 count = len(category_images[wnid])
