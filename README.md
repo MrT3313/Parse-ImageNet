@@ -2,6 +2,10 @@
 
 Extract image file paths from ImageNet by matching category keywords. Useful for creating custom subsets of ImageNet for training or evaluation.
 
+Python Version,https://img.shields.io/pypi/pyversions/parseimagenet
+License,https://img.shields.io/github/license/MrT3313/Parse-ImageNet
+Build Status,https://github.com/MrT3313/Parse-ImageNet/actions/workflows/main.yml/badge.svg
+
 ## [Kaggle Dataset](https://www.kaggle.com/competitions/imagenet-object-localization-challenge/data)
 
 ## Prerequisites
