@@ -39,7 +39,8 @@ For local development:
 
 ```bash
 git clone https://github.com/MrT3313/Parse-ImageNet.git
-pip install -e ./Parse-ImageNet
+pip install -e /path/to/ParseImageNet
+# ex: pip install -e /Users/mrt/Documents/MrT/code/computer-vision/ParseImageNet
 ```
 
 ## Usage

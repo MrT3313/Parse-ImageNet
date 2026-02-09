@@ -4,15 +4,14 @@ import random
 import argparse
 import re
 
-# keywords
-try:
-    from .keywords.birds import bird_keywords
-except ImportError:
-    from keywords.birds import bird_keywords
+from .keywords import bird_breeds, dog_breeds, wild_canid_breeds, snake_breeds
 
 # Registry of predefined keyword presets
 KEYWORD_PRESETS = {
-    "birds": bird_keywords,
+    "birds": bird_breeds,
+    "dogs": dog_breeds,
+    "wild_canids": wild_canid_breeds,
+    "snakes": snake_breeds,
 }
 
 def get_available_presets():
