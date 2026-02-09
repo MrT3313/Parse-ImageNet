@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "parseimagenet"
-version = "1.0.6"
+version = "1.0.7"
 license = { text = "MIT" }
 description = "Extract ImageNet image paths by category keywords"
 readme = "README.md"
@@ -33,7 +33,7 @@ classifiers = [
 "Homepage" = "https://github.com/MrT3313/Parse-ImageNet"
 
 [project.optional-dependencies]
-dev = ["jupyter", "ipykernel"]
+dev = ["jupyter", "ipykernel", "pytest>=7.0"]
 
 # Package discovery configuration
 # The package lives in the "parseimagenet/" subdirectory, following standard Python packaging conventions.
@@ -44,5 +44,9 @@ dev = ["jupyter", "ipykernel"]
 #       ├── __init__.py
 #       ├── ParseImageNetSubset.py
 #       └── keywords/
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-v --tb=short"
+
 [tool.setuptools.packages.find]
 where = ["."]
