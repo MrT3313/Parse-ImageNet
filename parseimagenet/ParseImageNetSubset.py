@@ -18,6 +18,24 @@ def get_available_presets():
     """Return list of available preset names."""
     return list(KEYWORD_PRESETS.keys())
 
+def get_synset_mapping(base_path):
+    """Read LOC_synset_mapping.txt and return a WNID-to-category-name mapping.
+
+    Args:
+        base_path: Path to ImageNet-Subset directory (str or Path).
+
+    Returns:
+        dict[str, str] mapping each WNID to its full category string.
+    """
+    synset_mapping_file = Path(base_path) / "LOC_synset_mapping.txt"
+    synset_mapping = {}
+    with open(synset_mapping_file, 'r') as f:
+        for line in f:
+            parts = line.strip().split(maxsplit=1)
+            if len(parts) == 2:
+                synset_mapping[parts[0]] = parts[1]
+    return synset_mapping
+
 def get_image_paths_by_keywords(base_path, preset="birds", keywords=None, num_images=200, silent=True):
     """
     Extract file paths for images matching specified keywords.
@@ -49,22 +67,14 @@ def get_image_paths_by_keywords(base_path, preset="birds", keywords=None, num_im
         search_keywords = KEYWORD_PRESETS[preset]
 
     train_annotations = base_path / "ILSVRC" / "ImageSets" / "CLS-LOC" / "train_cls.txt"
-    synset_mapping_file = base_path / "LOC_synset_mapping.txt"
     data_path = base_path / "ILSVRC" / "Data" / "CLS-LOC" / "train"
-    
+
     # Load synset mapping (wnid -> category names)
     if not silent:
         print("")
         print("Loading category names...")
-    synset_mapping = {}
-    with open(synset_mapping_file, 'r') as f:
-        for line in f:
-            parts = line.strip().split(maxsplit=1)
-            if len(parts) == 2:
-                wnid = parts[0]
-                category_name = parts[1]
-                synset_mapping[wnid] = category_name
-    
+    synset_mapping = get_synset_mapping(base_path)
+
     if not silent:
         print(f"Loaded {len(synset_mapping)} categories\n")
 

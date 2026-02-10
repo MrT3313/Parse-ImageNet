@@ -49,6 +49,11 @@ def test_get_available_presets_is_callable():
     assert callable(parseimagenet.get_available_presets)
 
 
+def test_get_synset_mapping_is_callable():
+    """Verify get_synset_mapping is exported and callable."""
+    assert callable(parseimagenet.get_synset_mapping)
+
+
 def test_keyword_presets_is_dict():
     """Verify KEYWORD_PRESETS is exported as a dict."""
     assert isinstance(parseimagenet.KEYWORD_PRESETS, dict)
