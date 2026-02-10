@@ -18,7 +18,7 @@ def get_available_presets():
     """Return list of available preset names."""
     return list(KEYWORD_PRESETS.keys())
 
-def get_image_paths_by_keywords(base_path, preset="birds", keywords=None, num_images=200):
+def get_image_paths_by_keywords(base_path, preset="birds", keywords=None, num_images=200, silent=True):
     """
     Extract file paths for images matching specified keywords.
 
@@ -28,6 +28,7 @@ def get_image_paths_by_keywords(base_path, preset="birds", keywords=None, num_im
                 Available presets: "birds". Use get_available_presets() to see all.
         keywords: Custom list of keywords. If provided, overrides preset.
         num_images: Number of random images to extract (default: 200)
+        silent: If True, suppress all print output (default: True)
 
     Returns:
         List of Path objects to the selected images
@@ -52,8 +53,9 @@ def get_image_paths_by_keywords(base_path, preset="birds", keywords=None, num_im
     data_path = base_path / "ILSVRC" / "Data" / "CLS-LOC" / "train"
     
     # Load synset mapping (wnid -> category names)
-    print("")
-    print("Loading category names...")
+    if not silent:
+        print("")
+        print("Loading category names...")
     synset_mapping = {}
     with open(synset_mapping_file, 'r') as f:
         for line in f:
@@ -63,10 +65,12 @@ def get_image_paths_by_keywords(base_path, preset="birds", keywords=None, num_im
                 category_name = parts[1]
                 synset_mapping[wnid] = category_name
     
-    print(f"Loaded {len(synset_mapping)} categories\n")
-    
+    if not silent:
+        print(f"Loaded {len(synset_mapping)} categories\n")
+
     # Parse training annotations
-    print("Parsing training annotations...")
+    if not silent:
+        print("Parsing training annotations...")
     category_images = defaultdict(list)
     
     with open(train_annotations, 'r') as f:
@@ -77,31 +81,36 @@ def get_image_paths_by_keywords(base_path, preset="birds", keywords=None, num_im
                 wnid = image_path.split('/')[0]  # Extract the wnid
                 category_images[wnid].append(image_path)
     
-    print(f"Found {len(category_images)} unique categories\n")
-    
+    if not silent:
+        print(f"Found {len(category_images)} unique categories\n")
+
     # Find matching categories
-    print("=" * 80)
-    print(f"SEARCHING WITH KEYWORDS: {search_keywords}")
-    print("=" * 80)
+    if not silent:
+        print("=" * 80)
+        print(f"SEARCHING WITH KEYWORDS: {search_keywords}")
+        print("=" * 80)
 
     matching_wnids = []
     for wnid, category_name in synset_mapping.items():
         if any(re.search(rf'\b{re.escape(keyword)}\b', category_name, re.IGNORECASE) for keyword in search_keywords):
             if wnid in category_images:
                 matching_wnids.append(wnid)
-                count = len(category_images[wnid])
-                print(f"{wnid}: {category_name} ({count} images)")
+                if not silent:
+                    count = len(category_images[wnid])
+                    print(f"{wnid}: {category_name} ({count} images)")
     
-    print(f"\n{'=' * 80}")
-    print(f"Total matching categories: {len(matching_wnids)}")
-    print(f"{'=' * 80}\n")
+    if not silent:
+        print(f"\n{'=' * 80}")
+        print(f"Total matching categories: {len(matching_wnids)}")
+        print(f"{'=' * 80}\n")
     
     # Collect all matching images
     all_matching_images = []
     for wnid in matching_wnids:
         all_matching_images.extend(category_images[wnid])
     
-    print(f"Total matching images available: {len(all_matching_images)}")
+    if not silent:
+        print(f"Total matching images available: {len(all_matching_images)}")
     
     # Select random images
     if len(all_matching_images) > 0:
@@ -114,15 +123,18 @@ def get_image_paths_by_keywords(base_path, preset="birds", keywords=None, num_im
             full_path = data_path / f"{img_path}.JPEG"
             full_paths.append(full_path)
         
-        print(f"\nSelected {num_to_select} random images")
-        
+        if not silent:
+            print(f"\nSelected {num_to_select} random images")
+
         # Verify how many actually exist
         existing = sum(1 for p in full_paths if p.exists())
-        print(f"Verified {existing}/{num_to_select} files exist on disk\n")
+        if not silent:
+            print(f"Verified {existing}/{num_to_select} files exist on disk\n")
         
         return full_paths
     else:
-        print("\nNo matching images found!")
+        if not silent:
+            print("\nNo matching images found!")
         return []
 
 
@@ -148,7 +160,8 @@ def main():
         base_path,
         preset=args.preset,
         keywords=args.keywords,
-        num_images=args.num_images
+        num_images=args.num_images,
+        silent=False,
     )
     
     # Print first 10 paths as example
