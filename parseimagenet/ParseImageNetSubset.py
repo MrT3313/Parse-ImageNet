@@ -189,8 +189,8 @@ def main():
                         help='Number of random images to extract (default: 200)')
     parser.add_argument('--preset', type=str, default='birds',
                         help=f'Predefined keyword preset (default: birds). Available: {get_available_presets()}')
-    parser.add_argument('--keywords', nargs='+', default=None,
-                        help='Custom keywords to match in category names (overrides --preset)')
+    parser.add_argument('--keywords', type=str, default=None,
+                        help='Comma-separated keywords to match in category names (overrides --preset)')
     parser.add_argument('--source', type=str, default='train',
                         choices=['train', 'val'],
                         help='Data split to use: train or val (default: train)')
@@ -206,7 +206,7 @@ def main():
     image_paths = get_image_paths_by_keywords(
         base_path,
         preset=args.preset,
-        keywords=args.keywords,
+        keywords=[k.strip() for k in args.keywords.split(',')] if args.keywords else None,
         num_images=args.num_images,
         source=args.source,
         silent=False,

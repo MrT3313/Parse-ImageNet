@@ -133,7 +133,7 @@ python -m parseimagenet.ParseImageNetSubset --base_path /path/to/ImageNet-Subset
 python -m parseimagenet.ParseImageNetSubset --base_path /path/to/ImageNet-Subset --preset birds --num_images 100
 
 # Use custom keywords (overrides preset)
-python -m parseimagenet.ParseImageNetSubset --base_path /path/to/ImageNet-Subset --keywords dog puppy --num_images 100
+python -m parseimagenet.ParseImageNetSubset --base_path /path/to/ImageNet-Subset --keywords "dog, puppy" --num_images 100
 
 # Use validation data instead of training data
 python -m parseimagenet.ParseImageNetSubset --base_path /path/to/ImageNet-Subset --preset birds --source val --num_images 100
