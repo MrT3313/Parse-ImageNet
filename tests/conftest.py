@@ -30,13 +30,16 @@ def _build_mock_imagenet(tmp_path, synset_lines=None, annotation_wnids=None, cre
     imageset_dir = tmp_path / "ILSVRC" / "ImageSets" / "CLS-LOC"
     imageset_dir.mkdir(parents=True, exist_ok=True)
 
-    data_dir = tmp_path / "ILSVRC" / "Data" / "CLS-LOC" / "train"
-    data_dir.mkdir(parents=True, exist_ok=True)
+    train_data_dir = tmp_path / "ILSVRC" / "Data" / "CLS-LOC" / "train"
+    train_data_dir.mkdir(parents=True, exist_ok=True)
+
+    val_data_dir = tmp_path / "ILSVRC" / "Data" / "CLS-LOC" / "val"
+    val_data_dir.mkdir(parents=True, exist_ok=True)
 
     # Build train_cls.txt annotations and (optionally) JPEG files
     annotation_lines = []
     for wnid in annotation_wnids:
-        wnid_dir = data_dir / wnid
+        wnid_dir = train_data_dir / wnid
         if create_jpegs:
             wnid_dir.mkdir(parents=True, exist_ok=True)
         for i in range(5):
@@ -47,6 +50,25 @@ def _build_mock_imagenet(tmp_path, synset_lines=None, annotation_wnids=None, cre
 
     train_cls = imageset_dir / "train_cls.txt"
     train_cls.write_text("\n".join(annotation_lines) + "\n")
+
+    # Build val.txt annotations, LOC_val_solution.csv, and val JPEG files
+    val_annotation_lines = []
+    val_solution_lines = ["ImageId,PredictionString"]
+    val_img_counter = 1
+    for wnid in annotation_wnids:
+        for i in range(5):
+            image_id = f"ILSVRC2012_val_{val_img_counter:08d}"
+            val_annotation_lines.append(f"{image_id} {val_img_counter}")
+            val_solution_lines.append(f"{image_id},{wnid} 0 0 100 100")
+            if create_jpegs:
+                (val_data_dir / f"{image_id}.JPEG").write_bytes(b"\xff\xd8dummy")
+            val_img_counter += 1
+
+    val_txt = imageset_dir / "val.txt"
+    val_txt.write_text("\n".join(val_annotation_lines) + "\n")
+
+    val_solution = tmp_path / "LOC_val_solution.csv"
+    val_solution.write_text("\n".join(val_solution_lines) + "\n")
 
     return tmp_path
 
@@ -65,7 +87,7 @@ def mock_imagenet_no_files(tmp_path):
 
 @pytest.fixture
 def mock_imagenet_empty(tmp_path):
-    """Mock ImageNet with empty train_cls.txt (no annotations)."""
+    """Mock ImageNet with empty train_cls.txt and val.txt (no annotations)."""
     base = tmp_path
 
     mapping_file = base / "LOC_synset_mapping.txt"
@@ -74,8 +96,15 @@ def mock_imagenet_empty(tmp_path):
     imageset_dir = base / "ILSVRC" / "ImageSets" / "CLS-LOC"
     imageset_dir.mkdir(parents=True, exist_ok=True)
     (imageset_dir / "train_cls.txt").write_text("")
+    (imageset_dir / "val.txt").write_text("")
 
-    data_dir = base / "ILSVRC" / "Data" / "CLS-LOC" / "train"
-    data_dir.mkdir(parents=True, exist_ok=True)
+    train_data_dir = base / "ILSVRC" / "Data" / "CLS-LOC" / "train"
+    train_data_dir.mkdir(parents=True, exist_ok=True)
+
+    val_data_dir = base / "ILSVRC" / "Data" / "CLS-LOC" / "val"
+    val_data_dir.mkdir(parents=True, exist_ok=True)
+
+    # LOC_val_solution.csv with header only
+    (base / "LOC_val_solution.csv").write_text("ImageId,PredictionString\n")
 
     return base

@@ -36,7 +36,7 @@ def get_synset_mapping(base_path):
                 synset_mapping[parts[0]] = parts[1]
     return synset_mapping
 
-def get_image_paths_by_keywords(base_path, preset="birds", keywords=None, num_images=200, silent=True):
+def get_image_paths_by_keywords(base_path, preset="birds", keywords=None, num_images=200, source="train", silent=True):
     """
     Extract file paths for images matching specified keywords.
 
@@ -46,6 +46,7 @@ def get_image_paths_by_keywords(base_path, preset="birds", keywords=None, num_im
                 Available presets: "birds". Use get_available_presets() to see all.
         keywords: Custom list of keywords. If provided, overrides preset.
         num_images: Number of random images to extract (default: 200)
+        source: Which data split to use, "train" or "val" (default: "train")
         silent: If True, suppress all print output (default: True)
 
     Returns:
@@ -66,8 +67,16 @@ def get_image_paths_by_keywords(base_path, preset="birds", keywords=None, num_im
             raise ValueError(f"Unknown preset '{preset}'. Available presets: {available}")
         search_keywords = KEYWORD_PRESETS[preset]
 
-    train_annotations = base_path / "ILSVRC" / "ImageSets" / "CLS-LOC" / "train_cls.txt"
-    data_path = base_path / "ILSVRC" / "Data" / "CLS-LOC" / "train"
+    valid_sources = ("train", "val")
+    if source not in valid_sources:
+        raise ValueError(f"Unknown source '{source}'. Must be one of: {list(valid_sources)}")
+
+    if source == "train":
+        annotations_file = base_path / "ILSVRC" / "ImageSets" / "CLS-LOC" / "train_cls.txt"
+        data_path = base_path / "ILSVRC" / "Data" / "CLS-LOC" / "train"
+    else:
+        annotations_file = base_path / "ILSVRC" / "ImageSets" / "CLS-LOC" / "val.txt"
+        data_path = base_path / "ILSVRC" / "Data" / "CLS-LOC" / "val"
 
     # Load synset mapping (wnid -> category names)
     if not silent:
@@ -78,18 +87,43 @@ def get_image_paths_by_keywords(base_path, preset="birds", keywords=None, num_im
     if not silent:
         print(f"Loaded {len(synset_mapping)} categories\n")
 
-    # Parse training annotations
+    # Parse annotations
     if not silent:
-        print("Parsing training annotations...")
+        print(f"Parsing {source} annotations...")
     category_images = defaultdict(list)
-    
-    with open(train_annotations, 'r') as f:
-        for line in f:
-            parts = line.strip().split()
-            if len(parts) >= 1:
-                image_path = parts[0]  # e.g., "n01440764/n01440764_10026"
-                wnid = image_path.split('/')[0]  # Extract the wnid
-                category_images[wnid].append(image_path)
+
+    if source == "train":
+        with open(annotations_file, 'r') as f:
+            for line in f:
+                parts = line.strip().split()
+                if len(parts) >= 1:
+                    image_path = parts[0]  # e.g., "n01440764/n01440764_10026"
+                    wnid = image_path.split('/')[0]  # Extract the wnid
+                    category_images[wnid].append(image_path)
+    else:
+        # Val: build image_id -> wnid mapping from LOC_val_solution.csv
+        val_solution_file = base_path / "LOC_val_solution.csv"
+        image_to_wnid = {}
+        with open(val_solution_file, 'r') as f:
+            for line in f:
+                line = line.strip()
+                if not line or line.startswith("ImageId"):
+                    continue
+                parts = line.split(",")
+                if len(parts) >= 2:
+                    image_id = parts[0]
+                    wnid = parts[1].split()[0]
+                    image_to_wnid[image_id] = wnid
+
+        # Read val.txt and group images by wnid
+        with open(annotations_file, 'r') as f:
+            for line in f:
+                parts = line.strip().split()
+                if len(parts) >= 1:
+                    image_id = parts[0]  # e.g., "ILSVRC2012_val_00000001"
+                    if image_id in image_to_wnid:
+                        wnid = image_to_wnid[image_id]
+                        category_images[wnid].append(image_id)
     
     if not silent:
         print(f"Found {len(category_images)} unique categories\n")
@@ -157,6 +191,9 @@ def main():
                         help=f'Predefined keyword preset (default: birds). Available: {get_available_presets()}')
     parser.add_argument('--keywords', nargs='+', default=None,
                         help='Custom keywords to match in category names (overrides --preset)')
+    parser.add_argument('--source', type=str, default='train',
+                        choices=['train', 'val'],
+                        help='Data split to use: train or val (default: train)')
     parser.add_argument('--base_path', type=str,
                         default='/Users/mrt/Documents/MrT/code/computer-vision/image-bank/ImageNet-Subset',
                         help='Path to ImageNet-Subset directory')
@@ -171,6 +208,7 @@ def main():
         preset=args.preset,
         keywords=args.keywords,
         num_images=args.num_images,
+        source=args.source,
         silent=False,
     )
     

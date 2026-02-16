@@ -68,3 +68,14 @@ class TestCLI:
         main()
         captured = capsys.readouterr()
         assert "Selected 3 random images" in captured.out
+
+    def test_source_val_flag(self, mock_imagenet, monkeypatch, capsys):
+        """Verify --source val uses val annotations and data."""
+        monkeypatch.setattr(sys, "argv", [
+            "parseimagenet", "--base_path", str(mock_imagenet),
+            "--source", "val",
+        ])
+        main()
+        captured = capsys.readouterr()
+        assert "Parsing val annotations..." in captured.out
+        assert "First 10 image paths:" in captured.out

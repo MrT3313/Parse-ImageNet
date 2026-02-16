@@ -16,16 +16,21 @@ Extract image file paths from ImageNet by matching category keywords. Useful for
   ```
   ImageNet-Subset/
   ├── LOC_synset_mapping.txt
+  ├── LOC_val_solution.csv
   └── ILSVRC/
       ├── ImageSets/
       │   └── CLS-LOC/
-      │       └── train_cls.txt
+      │       ├── train_cls.txt
+      │       └── val.txt
       └── Data/
           └── CLS-LOC/
-              └── train/
-                  ├── n01440764/
-                  │   ├── n01440764_10026.JPEG
-                  │   └── ...
+              ├── train/
+              │   ├── n01440764/
+              │   │   ├── n01440764_10026.JPEG
+              │   │   └── ...
+              │   └── ...
+              └── val/
+                  ├── ILSVRC2012_val_00000001.JPEG
                   └── ...
   ```
 
@@ -76,7 +81,7 @@ from parseimagenet import get_image_paths_by_keywords # main function
 from parseimagenet import get_available_presets, KEYWORD_PRESETS # helpers
 
 # See available presets
-print(get_available_presets())  # ['birds']
+print(get_available_presets())  # ['birds', 'dogs', 'wild_canids', 'snakes']
 
 # Use a specific preset
 image_paths = get_image_paths_by_keywords(
@@ -101,8 +106,21 @@ image_paths = get_image_paths_by_keywords(
 )
 ```
 
+#### Using Validation Data
+
+By default, images are sourced from the training set. Use `source="val"` to pull from the validation set instead:
+
+```python
+image_paths = get_image_paths_by_keywords(
+    base_path=base_path,
+    preset="birds",
+    num_images=100,
+    source="val"
+)
+```
+
 > [!NOTE]
-> 
+>
 > you can find all applicable categories in the `LOC_synset_mapping.txt` file
 
 ### Command Line
@@ -116,4 +134,7 @@ python -m parseimagenet.ParseImageNetSubset --base_path /path/to/ImageNet-Subset
 
 # Use custom keywords (overrides preset)
 python -m parseimagenet.ParseImageNetSubset --base_path /path/to/ImageNet-Subset --keywords dog puppy --num_images 100
+
+# Use validation data instead of training data
+python -m parseimagenet.ParseImageNetSubset --base_path /path/to/ImageNet-Subset --preset birds --source val --num_images 100
 ```
