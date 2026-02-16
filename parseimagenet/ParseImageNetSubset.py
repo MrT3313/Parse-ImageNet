@@ -36,14 +36,15 @@ def get_synset_mapping(base_path):
                 synset_mapping[parts[0]] = parts[1]
     return synset_mapping
 
-def get_image_paths_by_keywords(base_path, preset="birds", keywords=None, num_images=200, source="train", silent=True):
+def get_image_paths_by_keywords(base_path, preset=None, keywords=None, num_images=200, source="train", silent=True):
     """
     Extract file paths for images matching specified keywords.
 
     Args:
         base_path: Path to ImageNet-Subset directory
-        preset: Name of predefined keyword list (default: "birds").
-                Available presets: "birds". Use get_available_presets() to see all.
+        preset: Name of predefined keyword list (default: None).
+                Available presets: use get_available_presets() to see all.
+                When None (with keywords=None), returns random images from all categories.
         keywords: Custom list of keywords. If provided, overrides preset.
         num_images: Number of random images to extract (default: 200)
         source: Which data split to use, "train" or "val" (default: "train")
@@ -60,12 +61,15 @@ def get_image_paths_by_keywords(base_path, preset="birds", keywords=None, num_im
         if not isinstance(keywords, list):
             raise TypeError("keywords must be a list of strings.")
         search_keywords = keywords
-    else:
+    elif preset is not None:
         # Use preset
         if preset not in KEYWORD_PRESETS:
             available = get_available_presets()
             raise ValueError(f"Unknown preset '{preset}'. Available presets: {available}")
         search_keywords = KEYWORD_PRESETS[preset]
+    else:
+        # No keywords and no preset: select from all categories
+        search_keywords = None
 
     valid_sources = ("train", "val")
     if source not in valid_sources:
@@ -129,24 +133,39 @@ def get_image_paths_by_keywords(base_path, preset="birds", keywords=None, num_im
         print(f"Found {len(category_images)} unique categories\n")
 
     # Find matching categories
-    if not silent:
-        print("=" * 80)
-        print(f"SEARCHING WITH KEYWORDS: {search_keywords}")
-        print("=" * 80)
+    if search_keywords is None:
+        # All-categories mode: no keyword filtering
+        matching_wnids = list(category_images.keys())
+        if not silent:
+            print("=" * 80)
+            print("SELECTING FROM ALL CATEGORIES (no keyword filter)")
+            print("=" * 80)
+            for wnid in matching_wnids:
+                category_name = synset_mapping.get(wnid, "unknown")
+                count = len(category_images[wnid])
+                print(f"{wnid}: {category_name} ({count} images)")
+            print(f"\n{'=' * 80}")
+            print(f"Total categories: {len(matching_wnids)}")
+            print(f"{'=' * 80}\n")
+    else:
+        if not silent:
+            print("=" * 80)
+            print(f"SEARCHING WITH KEYWORDS: {search_keywords}")
+            print("=" * 80)
 
-    matching_wnids = []
-    for wnid, category_name in synset_mapping.items():
-        if any(re.search(rf'\b{re.escape(keyword)}\b', category_name, re.IGNORECASE) for keyword in search_keywords):
-            if wnid in category_images:
-                matching_wnids.append(wnid)
-                if not silent:
-                    count = len(category_images[wnid])
-                    print(f"{wnid}: {category_name} ({count} images)")
-    
-    if not silent:
-        print(f"\n{'=' * 80}")
-        print(f"Total matching categories: {len(matching_wnids)}")
-        print(f"{'=' * 80}\n")
+        matching_wnids = []
+        for wnid, category_name in synset_mapping.items():
+            if any(re.search(rf'\b{re.escape(keyword)}\b', category_name, re.IGNORECASE) for keyword in search_keywords):
+                if wnid in category_images:
+                    matching_wnids.append(wnid)
+                    if not silent:
+                        count = len(category_images[wnid])
+                        print(f"{wnid}: {category_name} ({count} images)")
+
+        if not silent:
+            print(f"\n{'=' * 80}")
+            print(f"Total matching categories: {len(matching_wnids)}")
+            print(f"{'=' * 80}\n")
     
     # Collect all matching images
     all_matching_images = []
@@ -188,7 +207,7 @@ def main():
     parser.add_argument('--num_images', type=int, default=200,
                         help='Number of random images to extract (default: 200)')
     parser.add_argument('--preset', type=str, default='birds',
-                        help=f'Predefined keyword preset (default: birds). Available: {get_available_presets()}')
+                        help=f'Predefined keyword preset (default: birds). Available: {get_available_presets()}. Use "none" for all categories.')
     parser.add_argument('--keywords', type=str, default=None,
                         help='Comma-separated keywords to match in category names (overrides --preset)')
     parser.add_argument('--source', type=str, default='train',
@@ -199,6 +218,10 @@ def main():
                         help='Path to ImageNet-Subset directory')
 
     args = parser.parse_args()
+
+    # Convert "none" string to Python None for all-categories mode
+    if args.preset and args.preset.lower() == "none":
+        args.preset = None
 
     base_path = Path(args.base_path)
 
