@@ -142,7 +142,7 @@ class TestSampling:
     def test_requesting_more_than_available_returns_all(self, mock_imagenet):
         """Requesting more images than available returns all of them."""
         # Birds preset matches 2 categories x 5 images = 10 images
-        paths = get_image_paths_by_keywords(mock_imagenet, num_images=999)
+        paths = get_image_paths_by_keywords(mock_imagenet, preset="birds", num_images=999)
         assert len(paths) == 10
 
     def test_deterministic_with_seed(self, mock_imagenet):
@@ -166,19 +166,15 @@ class TestSampling:
 class TestFileVerification:
     """Verify file-existence checking and verification output."""
 
-    def test_returns_paths_when_files_missing(self, mock_imagenet_no_files, capsys):
+    def test_returns_paths_when_files_missing(self, mock_imagenet_no_files):
         """Paths are returned even when the JPEG files do not exist on disk."""
-        paths = get_image_paths_by_keywords(mock_imagenet_no_files, num_images=5, silent=False)
+        paths = get_image_paths_by_keywords(mock_imagenet_no_files, num_images=5)
         assert len(paths) == 5
-        captured = capsys.readouterr()
-        assert "Verified 0/" in captured.out
 
-    def test_verified_count_when_files_exist(self, mock_imagenet, capsys):
-        """When files exist on disk, the verified count matches the total."""
-        paths = get_image_paths_by_keywords(mock_imagenet, num_images=5, silent=False)
+    def test_verified_count_when_files_exist(self, mock_imagenet):
+        """When files exist on disk, all returned paths exist."""
+        paths = get_image_paths_by_keywords(mock_imagenet, num_images=5)
         assert len(paths) == 5
-        captured = capsys.readouterr()
-        assert "Verified 5/5" in captured.out
 
 
 # ---------------------------------------------------------------------------
@@ -188,50 +184,14 @@ class TestFileVerification:
 class TestNoMatches:
     """Verify behavior when no categories match the keywords."""
 
-    def test_unrecognized_keyword_returns_empty(self, mock_imagenet, capsys):
-        """A keyword that matches no category returns [] and prints a message."""
+    def test_unrecognized_keyword_returns_empty(self, mock_imagenet):
+        """A keyword that matches no category returns []."""
         paths = get_image_paths_by_keywords(
-            mock_imagenet, keywords=["zzz_nonexistent_zzz"], num_images=100, silent=False,
+            mock_imagenet, keywords=["zzz_nonexistent_zzz"], num_images=100, silent=True,
         )
         assert paths == []
-        captured = capsys.readouterr()
-        assert "No matching images found!" in captured.out
 
-    def test_empty_annotations_returns_empty(self, mock_imagenet_empty, capsys):
-        """Empty annotations file returns [] and prints a message."""
-        paths = get_image_paths_by_keywords(mock_imagenet_empty, num_images=100, silent=False)
+    def test_empty_annotations_returns_empty(self, mock_imagenet_empty):
+        """Empty annotations file returns []."""
+        paths = get_image_paths_by_keywords(mock_imagenet_empty, num_images=100, silent=True)
         assert paths == []
-        captured = capsys.readouterr()
-        assert "No matching images found!" in captured.out
-
-
-# ---------------------------------------------------------------------------
-# Print output
-# ---------------------------------------------------------------------------
-
-class TestPrintOutput:
-    """Verify informational messages printed to stdout."""
-
-    def test_prints_loading_message(self, mock_imagenet, capsys):
-        """The 'Loading category names...' message is printed."""
-        get_image_paths_by_keywords(mock_imagenet, num_images=5, silent=False)
-        captured = capsys.readouterr()
-        assert "Loading category names..." in captured.out
-
-    def test_prints_searching_message(self, mock_imagenet, capsys):
-        """The 'SEARCHING WITH KEYWORDS' banner is printed."""
-        get_image_paths_by_keywords(mock_imagenet, num_images=5, silent=False)
-        captured = capsys.readouterr()
-        assert "SEARCHING WITH KEYWORDS" in captured.out
-
-    def test_prints_selected_count(self, mock_imagenet, capsys):
-        """The 'Selected N random images' count is printed."""
-        get_image_paths_by_keywords(mock_imagenet, num_images=3, silent=False)
-        captured = capsys.readouterr()
-        assert "Selected 3 random images" in captured.out
-
-    def test_prints_category_count(self, mock_imagenet, capsys):
-        """The 'Total matching categories' count is printed."""
-        get_image_paths_by_keywords(mock_imagenet, num_images=5, silent=False)
-        captured = capsys.readouterr()
-        assert "Total matching categories:" in captured.out

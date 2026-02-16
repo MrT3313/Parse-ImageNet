@@ -21,7 +21,7 @@ class TestEmptyFiles:
         data_dir = tmp_path / "ILSVRC" / "Data" / "CLS-LOC" / "train"
         data_dir.mkdir(parents=True)
 
-        paths = get_image_paths_by_keywords(tmp_path, num_images=10)
+        paths = get_image_paths_by_keywords(tmp_path, preset="birds", num_images=10)
         assert paths == []
 
     def test_empty_train_cls(self, mock_imagenet_empty):

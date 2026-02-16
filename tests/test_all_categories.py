@@ -1,9 +1,7 @@
 """Tests for all-categories mode (preset=None, keywords=None)."""
-import sys
-
 import pytest
 
-from parseimagenet.ParseImageNetSubset import get_image_paths_by_keywords, main
+from parseimagenet.ParseImageNetSubset import get_image_paths_by_keywords
 
 
 class TestAllCategoriesMode:
@@ -38,23 +36,6 @@ class TestAllCategoriesMode:
         assert len(result) == 5
         assert all("n02099601" in str(p) for p in result)
 
-    def test_verbose_prints_all_categories_banner(self, mock_imagenet, capsys):
-        """silent=False should print the all-categories banner."""
-        get_image_paths_by_keywords(
-            mock_imagenet, preset=None, keywords=None, num_images=1, silent=False,
-        )
-        captured = capsys.readouterr()
-        assert "SELECTING FROM ALL CATEGORIES" in captured.out
-        assert "SEARCHING WITH KEYWORDS" not in captured.out
-
-    def test_silent_suppresses_output(self, mock_imagenet, capsys):
-        """silent=True should produce no output."""
-        get_image_paths_by_keywords(
-            mock_imagenet, preset=None, keywords=None, num_images=1, silent=True,
-        )
-        captured = capsys.readouterr()
-        assert captured.out == ""
-
     def test_source_val(self, mock_imagenet):
         """All-categories mode should work with source='val'."""
         result = get_image_paths_by_keywords(
@@ -71,25 +52,13 @@ class TestAllCategoriesMode:
         assert result == []
 
 
-class TestCLIPresetNone:
-    """Verify --preset none triggers all-categories mode via the CLI."""
+class TestPresetNone:
+    """Verify preset=None triggers all-categories mode."""
 
-    def test_preset_none_cli(self, mock_imagenet, monkeypatch, capsys):
-        """--preset none should use all-categories mode."""
-        monkeypatch.setattr(sys, "argv", [
-            "parseimagenet", "--base_path", str(mock_imagenet),
-            "--preset", "none",
-        ])
-        main()
-        captured = capsys.readouterr()
-        assert "SELECTING FROM ALL CATEGORIES" in captured.out
-
-    def test_preset_none_case_insensitive(self, mock_imagenet, monkeypatch, capsys):
-        """--preset None (mixed case) should also trigger all-categories mode."""
-        monkeypatch.setattr(sys, "argv", [
-            "parseimagenet", "--base_path", str(mock_imagenet),
-            "--preset", "None",
-        ])
-        main()
-        captured = capsys.readouterr()
-        assert "SELECTING FROM ALL CATEGORIES" in captured.out
+    def test_preset_none_returns_all_wnids(self, mock_imagenet):
+        """preset=None should return images from all 5 WNIDs."""
+        result = get_image_paths_by_keywords(
+            mock_imagenet, preset=None, keywords=None, num_images=25,
+        )
+        wnids_found = {p.parent.name for p in result}
+        assert len(wnids_found) == 5

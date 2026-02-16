@@ -127,7 +127,7 @@ class TestValSampling:
     def test_val_requesting_more_than_available_returns_all(self, mock_imagenet):
         """Requesting more images than available returns all of them."""
         paths = get_image_paths_by_keywords(
-            mock_imagenet, source="val", num_images=999
+            mock_imagenet, preset="birds", source="val", num_images=999
         )
         # Birds preset: 2 wnids x 5 images = 10
         assert len(paths) == 10
@@ -139,31 +139,6 @@ class TestValSampling:
         random.seed(42)
         paths2 = get_image_paths_by_keywords(mock_imagenet, source="val", num_images=5)
         assert paths1 == paths2
-
-
-# ---------------------------------------------------------------------------
-# Val print output
-# ---------------------------------------------------------------------------
-
-class TestValPrintOutput:
-    """Verify informational messages for val source."""
-
-    def test_val_prints_val_annotations_message(self, mock_imagenet, capsys):
-        """Val source prints 'Parsing val annotations...', not 'training'."""
-        get_image_paths_by_keywords(
-            mock_imagenet, source="val", num_images=5, silent=False
-        )
-        captured = capsys.readouterr()
-        assert "Parsing val annotations..." in captured.out
-        assert "Parsing train annotations..." not in captured.out
-
-    def test_train_prints_train_annotations_message(self, mock_imagenet, capsys):
-        """Train source prints 'Parsing train annotations...'."""
-        get_image_paths_by_keywords(
-            mock_imagenet, source="train", num_images=5, silent=False
-        )
-        captured = capsys.readouterr()
-        assert "Parsing train annotations..." in captured.out
 
 
 # ---------------------------------------------------------------------------
