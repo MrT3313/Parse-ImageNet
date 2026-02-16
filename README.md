@@ -7,7 +7,7 @@ Extract image file paths from ImageNet by matching category keywords. Useful for
 [![License](https://img.shields.io/github/license/MrT3313/Parse-ImageNet)](https://github.com/MrT3313/Parse-ImageNet/blob/main/LICENSE)
 [![Downloads](https://img.shields.io/pypi/dm/parseimagenet)](https://pypi.org/project/parseimagenet/)
 
-## [Kaggle Dataset](https://www.kaggle.com/competitions/imagenet-object-localization-challenge/data)
+## [Kaggle Competition Dataset](https://www.kaggle.com/competitions/imagenet-object-localization-challenge/data)
 
 ## Prerequisites
 
@@ -51,10 +51,21 @@ pip install -e /path/to/ParseImageNet
 ## Usage
 
 > [!NOTE]
-> 
+>
 > [Example Notebook](/DOCS/ExampleNotebook.ipynb)
 
-### In Jupyter Lab / Jupyter Notebook
+### Params
+
+| Parameter    | Type              | Default   | Alternatives                                                          | Description                                            |
+|--------------|-------------------|-----------|-----------------------------------------------------------------------|--------------------------------------------------------|
+| `base_path`  | `Path`            | -         | Any valid directory path                                              | Root path to the ImageNet dataset                      |
+| `preset`     | `str` or `None`   | `None`    | `"birds"`, `"dogs"`, ... via `get_available_presets()`                | Predefined keyword list. `None` selects all categories |
+| `keywords`   | `list` or `None`  | `None`    | Any list of strings                                                   | Custom keyword list. Overrides `preset` when provided  |
+| `num_images` | `int`             | `200`     | Any positive integer                                                  | Max images to return (capped by availability)          |
+| `source`     | `str`             | `"train"` | `"val"`                                                               | Data split to sample from                              |
+| `silent`     | `bool`            | `True`    | `False`                                                               | Suppresses print output when enabled                   |
+
+### Base Example
 
 ```python
 from pathlib import Path
@@ -64,7 +75,7 @@ from parseimagenet import get_image_paths_by_keywords
 base_path = Path('/path/to/your/ImageNet-Subset')
 # ex: /Users/mrt/Documents/MrT/code/computer-vision/image-bank/ImageNet-Subset
 
-# Use the default "birds" preset
+# Default: no preset, selects from all categories
 image_paths = get_image_paths_by_keywords(base_path=base_path)
 
 # image_paths is a list of Path objects
@@ -72,9 +83,11 @@ print(f"Found {len(image_paths)} images")
 print(image_paths[:5])
 ```
 
-#### Using Preset Keywords
+### Using Presets
 
-Presets are predefined keyword lists for common categories:
+> [!NOTE]
+>
+> Presets are predefined keyword lists for common categories:
 
 ```python
 from parseimagenet import get_image_paths_by_keywords # main function
@@ -83,20 +96,26 @@ from parseimagenet import get_available_presets, KEYWORD_PRESETS # helpers
 # See available presets
 print(get_available_presets())  # ['birds', 'dogs', 'wild_canids', 'snakes']
 
+# Access preset keywords directly
+print(KEYWORD_PRESETS["birds"])
+
 # Use a specific preset
 image_paths = get_image_paths_by_keywords(
     base_path=base_path,
     preset="birds",
     num_images=200
 )
-
-# Access preset keywords directly
-print(KEYWORD_PRESETS["birds"])
 ```
 
-#### Using Custom Keywords
+### Using Keywords
 
-Custom keywords override the preset:
+> [!NOTE]
+> 
+> Custom keywords override the preset:
+
+> [!IMPORTANT]
+>
+> you can find all applicable category keywords in the `LOC_synset_mapping.txt` file
 
 ```python
 image_paths = get_image_paths_by_keywords(
@@ -106,9 +125,13 @@ image_paths = get_image_paths_by_keywords(
 )
 ```
 
-#### Using Validation Data
+### Using Sources
 
 By default, images are sourced from the training set. Use `source="val"` to pull from the validation set instead:
+
+> [!IMPORTANT]
+> 
+> we do not provide a fetch from the test data because the [Kaggle Competition Dataset](https://www.kaggle.com/competitions/imagenet-object-localization-challenge/data) does not provide the ground truth for the training data.
 
 ```python
 image_paths = get_image_paths_by_keywords(
@@ -118,10 +141,6 @@ image_paths = get_image_paths_by_keywords(
     source="val"
 )
 ```
-
-> [!NOTE]
->
-> you can find all applicable categories in the `LOC_synset_mapping.txt` file
 
 ### Command Line
 
